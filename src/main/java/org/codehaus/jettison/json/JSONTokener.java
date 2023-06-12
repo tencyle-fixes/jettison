@@ -173,6 +173,9 @@ public class JSONTokener {
                     }
                     break;
                 default:
+                    if (!more()) {
+                        throw syntaxError("The JSON text is malformed");
+                    }
                     back();
                     return '/';
                 }
