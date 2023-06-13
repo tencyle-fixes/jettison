@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.ListIterator;
 import java.util.Map;
 
 /**
@@ -144,9 +145,27 @@ public class JSONArray {
      * @throws               JSONException
      */
     public JSONArray(Collection collection) throws JSONException {
+        this(collection, 0);
+    }
+
+    public JSONArray(Collection collection, int recursionDepth) throws JSONException {
+        if (recursionDepth > JSONObject.getRecursionDepthLimit()) {
+            throw new JSONException("JSONArray has reached recursion depth limit of "
+                    + JSONObject.getRecursionDepthLimit());
+        }
         this.myArrayList = (collection == null) ?
                 new ArrayList() :
                 new ArrayList(collection);
+        // ensure a pure hierarchy of JSONObjects and JSONArrays
+        for (ListIterator iter = myArrayList.listIterator(); iter.hasNext();) {
+            Object e = iter.next();
+            if (e instanceof Collection) {
+                iter.set(new JSONArray((Collection) e, recursionDepth + 1));
+            }
+            if (e instanceof Map) {
+                iter.set(new JSONObject((Map) e));
+            }
+        }
     }
 
 

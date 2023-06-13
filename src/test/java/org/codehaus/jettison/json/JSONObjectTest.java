@@ -1,6 +1,8 @@
 package org.codehaus.jettison.json;
 import junit.framework.TestCase;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class JSONObjectTest extends TestCase {
@@ -93,11 +95,14 @@ public class JSONObjectTest extends TestCase {
     }
 
     public void testIssue52B() throws Exception {
+        int originalLimit = JSONObject.getRecursionDepthLimit();
+        int limit = 10;
+        JSONObject.setRecursionDepthLimit(limit);
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < 499; i++) {
+        for (int i = 0; i < limit - 1; i++) {
             sb.append("{}, ");
         }
-        sb.append("{a: 499}");
+        sb.append("{a: " + (limit - 1) + "}");
         new JSONArray("[" + sb.toString() + "]");
         sb.append(", {}");
         try {
@@ -106,6 +111,7 @@ public class JSONObjectTest extends TestCase {
             assertTrue(e.getMessage().contains("has reached recursion depth limit"));
             // expected
         }
+        JSONObject.setRecursionDepthLimit(originalLimit);
     }
 
     // https://github.com/jettison-json/jettison/issues/52
@@ -144,6 +150,18 @@ public class JSONObjectTest extends TestCase {
         } catch (JSONException e) {
             assertTrue(e.getMessage().contains("JSONTokener has reached recursion depth limit"));
             // expected
+        }
+    }
+
+    // https://github.com/jettison-json/jettison/issues/60
+    public void testIssue60() throws JSONException {
+        List list = new ArrayList();
+        list.add(list);
+        try {
+            new JSONArray(list);
+            fail("Failure expected");
+        } catch (JSONException ex) {
+            assertEquals(ex.getMessage(), "JSONArray has reached recursion depth limit of 500");
         }
     }
 }

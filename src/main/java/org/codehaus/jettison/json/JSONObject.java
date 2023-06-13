@@ -1242,6 +1242,23 @@ public class JSONObject {
         return quote(value.toString());
     }
 
+    /**
+     * Set the new recursion depth limit to prevent stack overflow issues on deeply nested structures. The default
+     * value is 500
+     * @param newRecursionDepthLimit the new recursion depth limit to set
+     */
+    public static void setRecursionDepthLimit(int newRecursionDepthLimit) {
+        RECURSION_DEPTH_LIMIT = newRecursionDepthLimit;
+    }
+
+    /**
+     * Get the new recursion depth limit to prevent stack overflow issues on deeply nested structures. The default
+     * value is 500
+     * @return the recursion depth limit
+     */
+    public static int getRecursionDepthLimit() {
+        return RECURSION_DEPTH_LIMIT;
+    }
 
      /**
       * Write the contents of the JSONObject as JSON text to a writer.
