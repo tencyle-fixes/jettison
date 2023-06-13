@@ -92,6 +92,22 @@ public class JSONObjectTest extends TestCase {
         new JSONObject(map);
     }
 
+    public void testIssue52B() throws Exception {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 499; i++) {
+            sb.append("{}, ");
+        }
+        sb.append("{a: 499}");
+        new JSONArray("[" + sb.toString() + "]");
+        sb.append(", {}");
+        try {
+            new JSONArray("[" + sb.toString() + "]");
+        } catch (JSONException e) {
+            assertTrue(e.getMessage().contains("has reached recursion depth limit"));
+            // expected
+        }
+    }
+
     // https://github.com/jettison-json/jettison/issues/52
     public void testIssue52Recursive() throws Exception {
         try {
