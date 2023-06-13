@@ -22,6 +22,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+
 
 /**
  * A JSONObject is an unordered collection of name/value pairs. Its
@@ -77,6 +79,12 @@ import java.util.Map;
  * @version 2
  */
 public class JSONObject {
+    /**
+     * The default recursion depth limit to prevent stack overflow issues on deeply nested structures.
+     */
+    final static int DEFAULT_RECURSION_DEPTH_LIMIT = 500;
+
+    static int RECURSION_DEPTH_LIMIT = DEFAULT_RECURSION_DEPTH_LIMIT;
 
     /**
      * JSONObject.NULL is equivalent to the value that JavaScript calls null,
@@ -219,11 +227,33 @@ public class JSONObject {
      * Construct a JSONObject from a Map.
      * @param map A map object that can be used to initialize the contents of
      *  the JSONObject.
+     * @throws JSONException If there is a syntax error.
      */
-    public JSONObject(Map map) {
+    public JSONObject(Map map) throws JSONException {
+        this(map, 0);
+    }
+
+    private JSONObject(Map map, int recursionDepth) throws JSONException {
+
+        if (recursionDepth > RECURSION_DEPTH_LIMIT) {
+            throw new JSONException("JSONObject has reached recursion depth limit of " + RECURSION_DEPTH_LIMIT);
+        }
         this.myHashMap = (map == null) ?
                 new LinkedHashMap() :
                 new LinkedHashMap(map);
+        // ensure a pure hierarchy of JSONObjects and JSONArrays
+        Object[] entries = myHashMap.entrySet().toArray();
+        for (int i = 0; i < entries.length; i++) {
+            Entry entry = (Entry) entries[i];
+            Object v = entry.getValue();
+            if (v instanceof Collection) {
+                myHashMap.put(entry.getKey(), new JSONArray((Collection) v));
+            }
+            if (v instanceof Map && v != map) {
+                myHashMap.put(entry.getKey(), new JSONObject((Map) v, recursionDepth + 1));
+            }
+        }
+
     }
 
     
@@ -921,6 +951,12 @@ public class JSONObject {
             c = string.charAt(i);
             switch (c) {
             case '\\':
+                // Escape a backslash, but only if it isn't already escaped
+                if (i == len - 1 || string.charAt(i + 1) != '\\') {
+                    sb.append('\\');
+                }
+                sb.append(c);
+                break;
             case '"':
                 sb.append('\\');
                 sb.append(c);
