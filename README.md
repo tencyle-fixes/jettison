@@ -1,3 +1,21 @@
+
+# Jettison Backports Repository by Tencyle
+
+## Note: This is *not* the official Jettison repository
+
+This repository contains security backports to various CVE's found in Jettison.
+
+Please note, that while the backports are *based* on the official fixes, they were created by Tencyle and not by the maintainers of Jettison.
+
+### backports
+
+Backport branchs stem from a tagged version, and are named "backport-TAG"
+
+for example: the backport branch for tag **jettison-1.1** is **backport-jetisson-1.1** 
+
+### The original jettison readme:
+
+
 Jettison is a Java library for converting XML to JSON and vice-versa with the help of StAX (https://en.wikipedia.org/wiki/StAX).
 It implements XMLStreamWriter and XMLStreamReader and supports Mapped and BadgerFish conventions. Latest release is 1.4.0.
 
